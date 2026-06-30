@@ -6,7 +6,7 @@ from datetime import datetime
 
 st.set_page_config(page_title="Tőzsde Platform és elemzés", page_icon="📈", layout="wide")
 
-# TITKOSÍTOTT ADATBÁZIS KAPCSOLÓDÁS A FELHŐHÖZ
+# TITKOSÍTOTT ADATBÁZIS KAPCSOLÓDÁS A FELHŐHÖZ - szamos jelszo
 try:
     connection = mysql.connector.connect(
         host=st.secrets["db_host"],
@@ -23,7 +23,7 @@ except mysql.connector.Error as err:
 st.sidebar.title("Navigáció")
 menupont = st.sidebar.radio("Ugrás ide:", ["Főoldal", "Kimutatások (Nyilvános)", "Személyes Adatok (Védett)"])
 
-# Főoldal
+# Főoldal  -jo
 if menupont == "Főoldal":
     st.title("Tőzsde és Osztalék Napló")
 
@@ -71,7 +71,7 @@ if menupont == "Főoldal":
             with st.form("vetel_form", clear_on_submit=True):
                 valasztott_user_nev = st.selectbox("Ki vásárol?", list(user_opciok.keys()))
                 valasztott_reszveny_str = st.selectbox("Melyik részvényt?", reszveny_opciok)
-                mennyiseg = st.number_input("Darabszám:", min_value=1, max_value=1000, value=1)
+                mennyiseg = st.number_input("Darabszám:", min_value=1, max_value=1000, value=1)  
                 
                 submit_trade = st.form_submit_button("Tranzakció indítása")
                 
@@ -90,12 +90,12 @@ if menupont == "Főoldal":
         else:
             st.info("Kérjük regisztráljon legalább egy felhasználót a vásárláshoz!")
 
-# Kimutatások
+# Kimutatások -jo
 elif menupont == "Kimutatások (Nyilvános)":
     st.title("Tőzsdei Kimutatások")
     st.info("Anonim piaci történet")
 
-    # Portfólió
+    # Portfólió -kb
     query_portfolio = """
     SELECT 
         t.ticker AS 'Részvény',
@@ -110,7 +110,7 @@ elif menupont == "Kimutatások (Nyilvános)":
         fig1 = px.pie(df_port, values='Meglévő db', names='Részvény', hole=0.4, color_discrete_sequence=px.colors.sequential.RdBu)
         st.plotly_chart(fig1, use_container_width=True)
     
-    # Árfolyamok
+    # Árfolyamok -hibajeh
     st.subheader("Árfolyamváltozások (2023 - 2026 Június, USD)")
     
     query_ar = "SELECT datum, ticker, zaro_ar AS 'zaro_ar_usd' FROM NapiArfolyamok ORDER BY datum;"
@@ -148,7 +148,7 @@ elif menupont == "Kimutatások (Nyilvános)":
     df_raw = pd.read_sql(f"SELECT * FROM {valasztott_tabla};", connection)
     st.dataframe(df_raw, use_container_width=True)
 
-# Adminisztráció
+# Adminisztráció -itt jo
 elif menupont == "Személyes Adatok (Védett)":
     st.title("🔒 Védett Személyes Adatok")
     jelszo_input = st.text_input("Adminisztrátori jelszó:", type="password")
@@ -156,7 +156,7 @@ elif menupont == "Személyes Adatok (Védett)":
     if jelszo_input == "adat01":
         st.success("🔓 Hozzáférés engedélyezve!")
         
-        # Statisztika
+        # Statisztika -nezd at
         st.subheader("Felhasználók összesített befektetései")
         query_user_invest = """
         SELECT 
@@ -172,7 +172,7 @@ elif menupont == "Személyes Adatok (Védett)":
             fig3 = px.bar(df_ui, x='Befektető', y='Befektetett összeg', color='Befektető', text_auto='.2s')
             st.plotly_chart(fig3, use_container_width=True)
             
-        # Ügyfelek
+        # Ügyfelek - jo
         st.subheader("👥 Regisztrált ügyfelek privát adatai")
         df_users = pd.read_sql("SELECT * FROM Felhasznalok;", connection)
         st.dataframe(df_users, use_container_width=True)
