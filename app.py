@@ -4,14 +4,16 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 
-st.set_page_config(page_title="Tőzsde Platform", page_icon="📈", layout="wide")
+st.set_page_config(page_title="Tőzsde Platform és elemzés", page_icon="📈", layout="wide")
 
+# TITKOSÍTOTT ADATBÁZIS KAPCSOLÓDÁS A FELHŐHÖZ
 try:
     connection = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="Gyakorlat01",        
-        database="TozsdeAdatok" 
+        host=st.secrets["db_host"],
+        port=int(st.secrets["db_port"]),       
+        user=st.secrets["db_user"],
+        password=st.secrets["db_password"],        
+        database=st.secrets["db_database"] 
     )
     cursor = connection.cursor()
 except mysql.connector.Error as err:
@@ -23,19 +25,19 @@ menupont = st.sidebar.radio("Ugrás ide:", ["Főoldal", "Kimutatások (Nyilváno
 
 # Főoldal
 if menupont == "Főoldal":
-    st.title("Tőzsde és Osztalék Napló 📈")
-    st.write("Üdvözöllek a valós idejű tőzsdei szimulációs platformodon!")
+    st.title("Tőzsde és Osztalék Napló")
+
     st.warning("⚠️ FIGYELMEZTETÉS: Ez egy teszt alkalmazás! Kérjük, hogy biztonsági okokból NE adjon meg sehol valós adatokat!")
 
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("👤 Felhasználó regisztráció")
+        st.subheader("Felhasználó regisztráció")
         with st.form("felhasznalo_form", clear_on_submit=True):
             nev = st.text_input("Név (pl. Teszt Elek):")
             email = st.text_input("E-mail cím:")
             eletkor = st.number_input("Életkor:", min_value=18, max_value=99, value=25)
-            bankszamla = st.text_input("Fiktív bankszámlaszám (Pontosan 5 számjegy):", max_chars=5)
+            bankszamla = st.text_input("bankszámlaszám (Pontosan 5 számjegy):", max_chars=5)
             
             submit_user = st.form_submit_button("Profil mentése")
             
@@ -46,7 +48,6 @@ if menupont == "Főoldal":
                     st.error("A bankszámlaszámnak pontosan 5 jegyű számnak kell lennie!")
                 else:
                     try:
-                        # Javítva
                         query = "INSERT INTO Felhasznalok (nev, email, eletkor, bankszamlaszam, regisztracio_datuma) VALUES (%s, %s, %s, %s, %s);"
                         cursor.execute(query, (nev, email, eletkor, bankszamla, datetime.now().date()))
                         connection.commit()
@@ -55,7 +56,7 @@ if menupont == "Főoldal":
                         st.error(f"Hiba: {err}")
 
     with col2:
-        st.subheader("🛒 Részvény vásárlás (VÉTEL)")
+        st.subheader("Részvény vásárlás (VÉTEL)")
         
         cursor.execute("SELECT user_id, nev FROM Felhasznalok;")
         felhasznalok = cursor.fetchall()
@@ -91,8 +92,8 @@ if menupont == "Főoldal":
 
 # Kimutatások
 elif menupont == "Kimutatások (Nyilvános)":
-    st.title("📊 Tőzsdei Kimutatások")
-    st.info("Anonim piaci történeti trendek fix, statikus adatok alapján.")
+    st.title("Tőzsdei Kimutatások")
+    st.info("Anonim piaci történet")
 
     # Portfólió
     query_portfolio = """
@@ -105,12 +106,12 @@ elif menupont == "Kimutatások (Nyilvános)":
     df_port = pd.read_sql(query_portfolio, connection)
     
     if not df_port.empty:
-        st.subheader("📈 Piaci alapú részvényeloszlás a platformon (Darabszám szerint)")
+        st.subheader("Piaci alapú részvényeloszlás")
         fig1 = px.pie(df_port, values='Meglévő db', names='Részvény', hole=0.4, color_discrete_sequence=px.colors.sequential.RdBu)
         st.plotly_chart(fig1, use_container_width=True)
     
     # Árfolyamok
-    st.subheader("📉 Történeti Árfolyamváltozások (2023 - 2026 Június, USD)")
+    st.subheader("Árfolyamváltozások (2023 - 2026 Június, USD)")
     
     query_ar = "SELECT datum, ticker, zaro_ar AS 'zaro_ar_usd' FROM NapiArfolyamok ORDER BY datum;"
     df_ar = pd.read_sql(query_ar, connection)
@@ -140,7 +141,7 @@ elif menupont == "Kimutatások (Nyilvános)":
         st.warning("A NapiArfolyamok tábla jelenleg üres. Kérjük futtasd le az SQL szkriptet!")
 
     # Táblázatok
-    st.subheader("🗄️ Nyers adatok megtekintése")
+    st.subheader("Nyers adatok")
     cursor.execute("SHOW TABLES;")
     biztonsagos_tablak = [t[0] for t in cursor.fetchall() if t[0].lower() != 'felhasznalok']
     valasztott_tabla = st.selectbox("Válaszd ki a táblát:", biztonsagos_tablak)
@@ -156,7 +157,7 @@ elif menupont == "Személyes Adatok (Védett)":
         st.success("🔓 Hozzáférés engedélyezve!")
         
         # Statisztika
-        st.subheader("📊 Felhasználók összesített befektetései")
+        st.subheader("Felhasználók összesített befektetései")
         query_user_invest = """
         SELECT 
             f.nev AS 'Befektető',
@@ -178,7 +179,3 @@ elif menupont == "Személyes Adatok (Védett)":
             
     elif jelszo_input != "":
         st.error("❌ Helytelen jelszó!")
-
-if 'connection' in locals() and connection.is_connected():
-    cursor.close()
-    connection.close()
