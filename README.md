@@ -16,7 +16,7 @@ Ez egy teljes körű (End-to-End) webalkalmazás, amely egy leegyszerüsített t
 * **Felhasználói regisztráció:** Új ügyfelek rögzítése validált adatokkal közvetlenül a felhős MySQL-be.
 * **Tranzakció-kezelés (VÉTEL):** Dinamikus részvényvásárlás a bázisban tárolt aktuális árak alapján.
 * **Interaktív kimutatások:** Portfólió-eloszlás (Pie chart) és történeti árfolyamváltozások (Line chart) vizualizációja.
-* **Adminisztrátori felület:** Jelszóval védett felület a regisztrált ügyfelek privát adatainak megtekintéséhez.
+* **Adminisztrátori felület:** Jelszóval védett felület a regisztrált ügyfelek privát adatainak megtekintéséhez. JELSZÓ: adat01
 
 ## 🔒 Adatbiztonság
 Az alkalmazás hozzáférési adatai (Credentials) nem szerepelnek a forráskódban; a biztonságos adatbázis-kommunikáció a Streamlit felhő környezeti változóin keresztül (**Secrets Management**) valósul meg.
